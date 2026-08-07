@@ -1,0 +1,7 @@
+[2026-08-05 06:23:32] [INFO] Cleanup mode started. OlderThanDays=3; Cutoff=8/2/2026 6:23:32 AM
+[2026-08-05 06:23:32] [INFO] Processing log: Application
+[2026-08-05 06:23:32] [WARN] Skipping 'Application' because today's archive already exists: C:\Users\labuser\Documents\Training\day3\eventlog-archive\Application\Application-20260805.evtx
+[2026-08-05 06:23:32] [INFO] Processing log: System
+[2026-08-05 06:23:32] [WARN] Skipping 'System' because today's archive already exists: C:\Users\labuser\Documents\Training\day3\eventlog-archive\System\System-20260805.evtx
+[2026-08-05 06:23:32] [INFO] Processing log: Security
+[2026-08-05 06:23:35] [WARN] Skipping 'Security' because today's archive already exists: C:\Users\labuser\Documents\Training\day3\eventlog-archive\Security\Security-20260805.evtx

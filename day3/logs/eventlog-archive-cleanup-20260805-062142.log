@@ -1,0 +1,9 @@
+[2026-08-05 06:21:42] [INFO] Cleanup mode started. OlderThanDays=3; Cutoff=8/2/2026 6:21:42 AM
+[2026-08-05 06:21:42] [INFO] Processing log: Application
+[2026-08-05 06:21:42] [WARN] Skipping 'Application' because today's archive already exists: C:\Users\labuser\Documents\Training\day3\eventlog-archive\Application\Application-20260805.evtx
+[2026-08-05 06:21:42] [INFO] Processing log: System
+[2026-08-05 06:21:43] [WARN] Skipping 'System' because today's archive already exists: C:\Users\labuser\Documents\Training\day3\eventlog-archive\System\System-20260805.evtx
+[2026-08-05 06:21:43] [INFO] Processing log: Security
+[2026-08-05 06:21:45] [INFO] Archive created for 'Security': C:\Users\labuser\Documents\Training\day3\eventlog-archive\Security\Security-20260805.evtx
+[2026-08-05 06:21:45] [WARN] Skipped clear for 'Security' because newer records exist. OldRecords=518
+[2026-08-05 06:21:45] [INFO] Manifest created: C:\Users\labuser\Documents\Training\day3\eventlog-archive\manifests\eventlog-manifest-20260805-062142.json

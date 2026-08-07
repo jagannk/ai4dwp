@@ -1,0 +1,137 @@
+Exercise 1 — Application crash (Event Viewer, Application log) – do the analysis and store it as document in day 3
+Log Name: Application
+Source: Application Error
+Event ID: 1000
+Level: Error
+Date: 2024-03-15 09:14:22
+
+Faulting application name: OUTLOOK.EXE, version: 16.0.17126.20132
+Faulting module name: KERNELBASE.dll, version: 10.0.22621.3155
+Exception code: 0xc0000005
+Fault offset: 0x000000000003a4b2
+Faulting process ID: 0x1f4c
+Faulting application start time: 2024-03-15 09:13:44
+Faulting application path: C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
+Faulting module path: C:\Windows\System32\KERNELBASE.dll
+Report ID: a3c2f1d4-89bb-4e21-91d7-f2c3a1b09e44
+
+Log Name: Application
+Source: Application Error
+Event ID: 1000
+Level: Error
+Date: 2024-03-15 09:17:45
+
+Faulting application name: OUTLOOK.EXE, version: 16.0.17126.20132
+Faulting module name: KERNELBASE.dll, version: 10.0.22621.3155
+Exception code: 0xc0000005
+Fault offset: 0x000000000003a4b2
+
+Log Name: Application
+Source: Windows Error Reporting
+Event ID: 1001
+Level: Information
+Date: 2024-03-15 09:18:01
+Description: Fault bucket 1847362910, type 4
+Event Name: APPCRASH
+Response: Not available
+Cab Id: 0
+
+Log Name: Application
+Source: .NET Runtime
+Event ID: 1026
+Level: Error
+Date: 2024-03-15 09:18:05
+Description: Application: OUTLOOK.EXE
+Framework Version: v4.0.30319
+Description: The process was terminated due to an unhandled exception.
+Exception Info: System.AccessViolationException
+
+Exercise 2 — Service crash loop (System log) – do the analysis and store it as document in day 3
+Log Name: System
+Source: Service Control Manager
+Event ID: 7034 Level: Error Date: 2024-03-15 10:01:14
+Description: The Print Spooler service terminated unexpectedly.
+It has done this 1 time(s).
+
+Log Name: System
+Source: Service Control Manager
+Event ID: 7034 Level: Error Date: 2024-03-15 10:01:45
+Description: The Print Spooler service terminated unexpectedly.
+It has done this 2 time(s).
+
+Log Name: System
+Source: Service Control Manager
+Event ID: 7034 Level: Error Date: 2024-03-15 10:02:16
+Description: The Print Spooler service terminated unexpectedly.
+It has done this 3 time(s).
+
+Log Name: System
+Source: Service Control Manager
+Event ID: 7031 Level: Error Date: 2024-03-15 10:02:47
+Description: The Print Spooler service terminated unexpectedly.
+It has done this 4 time(s). The following corrective action will
+be taken in 60000 milliseconds: Restart the service.
+
+Log Name: System
+Source: Service Control Manager
+Event ID: 7023 Level: Error Date: 2024-03-15 10:03:49
+Description: The Print Spooler service terminated with the
+following error: The specified module could not be found.
+
+Log Name: System
+Source: Service Control Manager
+Event ID: 7038 Level: Error Date: 2024-03-15 10:03:50
+Description: The Print Spooler service was unable to log on as
+NT AUTHORITY\SYSTEM with the currently configured password due
+to the following error: Logon failure: the user has not been
+granted the requested logon type at this computer.
+
+Exercise 3 — RDP connection failure (System and Security logs) – do the anaysis and rca and store it as document in day 3
+Log Name: System
+Source: TermDD
+Event ID: 56 Level: Error Date: 2024-03-15 14:01:02
+Description: The Terminal Server security layer detected an
+error in the protocol stream and has disconnected the client.
+Client IP: 10.10.5.44
+
+Log Name: System
+Source: RemoteDesktopServices-RdpCoreTS
+Event ID: 140 Level: Warning Date: 2024-03-15 14:01:02
+Description: A connection from the client computer with an IP
+address of 10.10.5.44 failed because the user name or password
+is not correct.
+
+Log Name: Security
+Event ID: 4625 Level: Audit Failure Date: 2024-03-15 14:01:04
+Account: FINBRIDGE\bwalker
+Failure reason: Unknown username or bad password
+Logon type: 10 (RemoteInteractive) Source IP: 10.10.5.44
+
+Log Name: Security
+Event ID: 4625 Level: Audit Failure Date: 2024-03-15 14:03:18
+Account: FINBRIDGE\bwalker
+Failure reason: Unknown username or bad password
+Logon type: 10 (RemoteInteractive) Source IP: 10.10.5.44
+
+Log Name: Security
+Event ID: 4625 Level: Audit Failure Date: 2024-03-15 14:05:33
+Account: FINBRIDGE\bwalker
+Failure reason: Unknown username or bad password
+Logon type: 10 (RemoteInteractive) Source IP: 10.10.5.44
+
+Log Name: Security
+Event ID: 4740 Level: Audit Failure Date: 2024-03-15 14:05:34
+Account: FINBRIDGE\bwalker
+Caller computer: 10.10.5.44
+Description: A user account was locked out
+
+Log Name: System
+Source: RemoteDesktopServices-RdpCoreTS
+Event ID: 131 Level: Info Date: 2024-03-15 14:22:07
+Description: Server accepted a new TCP connection from client
+10.10.5.44:52341.
+
+Log Name: Security
+Event ID: 4624 Level: Audit Success Date: 2024-03-15 14:22:09
+Account: FINBRIDGE\bwalker
+Logon type: 10 (RemoteInteractive) Source IP: 10.10.5.44

@@ -1,0 +1,10 @@
+﻿{
+    "LogName":  "Security",
+    "ArchivePath":  "C:\\Users\\labuser\\Documents\\Training\\day3\\eventlog-archive\\Security\\Security-20260805.evtx",
+    "ArchiveDate":  "20260805",
+    "Cutoff":  "2026-08-02T06:21:42.7878106+00:00",
+    "TotalRecordsAtRun":  22179,
+    "OldRecordsAtRun":  518,
+    "Cleared":  false,
+    "Timestamp":  "2026-08-05T06:21:42.7565551+00:00"
+}

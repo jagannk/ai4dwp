@@ -1,0 +1,10 @@
+[2026-08-05 06:20:18] [INFO] Cleanup mode started. OlderThanDays=3; Cutoff=8/2/2026 6:20:18 AM
+[2026-08-05 06:20:18] [INFO] Processing log: Application
+[2026-08-05 06:20:18] [INFO] Archive created for 'Application': C:\Users\labuser\Documents\Training\day3\eventlog-archive\Application\Application-20260805.evtx
+[2026-08-05 06:20:18] [WARN] Skipped clear for 'Application' because newer records exist. OldRecords=8
+[2026-08-05 06:20:18] [INFO] Processing log: System
+[2026-08-05 06:20:19] [INFO] Archive created for 'System': C:\Users\labuser\Documents\Training\day3\eventlog-archive\System\System-20260805.evtx
+[2026-08-05 06:20:19] [WARN] Skipped clear for 'System' because newer records exist. OldRecords=66
+[2026-08-05 06:20:19] [INFO] Processing log: Security
+[2026-08-05 06:20:19] [ERROR] Failed reading log metadata for 'Security'. Could not retrieve information about the Security log. Error: Attempted to perform an unauthorized operation..
+[2026-08-05 06:20:19] [INFO] Manifest created: C:\Users\labuser\Documents\Training\day3\eventlog-archive\manifests\eventlog-manifest-20260805-062018.json

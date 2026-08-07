@@ -1,0 +1,61 @@
+1. You are a PowerShell developer(version 5.1) . Write a PowerShell script for a DWP engineer to 
+Startup program auditor -- day rUn should list the programs in the start up. should have a disable flag which can get the program name as input and disable it.
+
+2. You are a PowerShell developer(version 5.1) . Write a PowerShell script for a DWP engineer to Large file finder -- read only script find and report large files, keep the threshold as input (default 100 MB)
+
+3. You are a PowerShell developer(version 5.1) . Write a PowerShell script for a DWP engineer to Disk health reporter -- Write a script that reports disk health and optimisation status.This script is strictly read-only — it must never run defragmentation
+
+4.A. review of existing script
+---
+create a file under day 3 with file name inherited.ps1
+
+$c = Get-CimInstance Win32_ComputerSystem
+$d = Get-PSDrive C | Select-Object -ExpandProperty Free
+$p = Get-Process | Sort-Object WS -Descending | Select-Object -First 5
+$e = Get-WinEvent -LogName System -MaxEvents 10 | Where-Object {$_.Level -eq 2}
+$u = Get-CimInstance Win32_UserProfile | Where-Object {
+     -not $_.Special -and $_.LastUseTime -lt (Get-Date).AddDays(-90)}
+Write-Host $c.Name $c.TotalPhysicalMemory
+Write-Host ([math]::Round($d/1GB,2)) 'GB free'
+$p | ForEach-Object { Write-Host $_.Name $_.WS }
+$e | ForEach-Object { Write-Host $_.TimeCreated $_.Message }
+if ($u.Count -gt 0) { Write-Host 'Stale profiles:' $u.Count }
+
+Ask AI to explain the script for you
+---
+you are a PowerShell developer. Explain the PowerShell script line by line in plain English, For each line provide below data
+1. what it does
+2. whether it reads a system parameter or changes a system parameter
+3. any risk associated with the command 
+
+
+4.B 
+Prompt to refactor the script
+---
+Refactor this inherited.ps1 powershell script to make it readable for all. Requirements:
+1. Add a comments above every line expalaining its purpose
+2. Rename all single letter variables to descriptive names
+3. Add a header block: purpose, author, how to run the script etc
+4. Do not change whatt script does - only improve readablity
+
+
+5. 
+You are a DWP analyst working on windows update failure issue. Below are the relevant failure lines from windows update log on windows 11 endpoint. This error occurs repeatedly. Identify the distinct error code present, then give a ranked remediation plan (most likely fix first) with specific check for each. Treat all error codes as given. If you are uncertain about a code say so rather than guessing. Mark anything to verify against Microsoft documentation.
+
+2024-03-15 07:58:01.123 WindowsUpdateClient Info Checking for updates…
+2024-03-15 07:58:44.210 WindowsUpdateClient Info Found 3 applicable updates.
+2024-03-15 07:59:01.001 UpdateOrchestrator Info Downloading KB5034441 (2024-01 Cumulative Update for Windows 11 22H2)
+2024-03-15 07:59:55.887 UpdateOrchestrator Info Download complete. Beginning installation.
+2024-03-15 08:00:12.340 CBS Info Starting component store operations for KB5034441.
+2024-03-15 08:00:58.112 CBS Warning Existing component store has minor inconsistencies. Attempting repair.
+2024-03-15 08:01:02.450 CBS Error Failed to stage component store repair. HRESULT = 0x80073712.
+2024-03-15 08:01:10.780 WindowsUpdateClient Warning Unable to connect to the remote server during validation (0x80072EFE). Retrying…
+2024-03-15 08:01:14.900 WindowsUpdateClient Warning Retry 1 of 3 — connection re-established.
+2024-03-15 08:01:23.001 UpdateOrchestrator Error Failed to install KB5034441 (0x8007000E): Insufficient resources to complete the requested service.
+2024-03-15 08:01:23.110 UpdateOrchestrator Error Extended error: Recovery partition (450MB) is too small to stage update. Required: 862MB. Available: 448MB.
+2024-03-15 08:01:45.330 WindowsUpdateClient Error Installation Failure: Windows failed to install the following update with error 0x8007000E: 2024-01 Cumulative Update for Windows 11 22H2 for x64-based Systems (KB5034441).
+2024-03-15 08:02:11.004 UpdateOrchestrator Info Rolling back partial installation of KB5034441.
+2024-03-15 08:02:12.780 UpdateOrchestrator Info Rollback complete. System state restored.
+2024-03-15 08:02:13.001 UpdateOrchestrator Info Retry scheduled in 60 minutes.
+2024-03-15 08:02:14.450 CBS Info Component store left in pre-repair state. Run DISM /Online /Cleanup-Image /RestoreHealth to resolve 0x80073712.
+2024-03-15 08:03:00.000 WindowsUpdateClient Info Update history logged. Next check: 2024-03-15 09:02:00.

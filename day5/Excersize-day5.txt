@@ -1,0 +1,3 @@
+Exercise
+--
+craete runbook, L1, L2/L3 kb article for the rca of incident "Finance team cannot access shared drives"

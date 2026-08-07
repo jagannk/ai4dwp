@@ -1,0 +1,13 @@
+[2026-08-05 05:21:00] [INFO] Cleanup mode started. OlderThanDays=0; CutoffDate=8/5/2026 5:21:00 AM
+[2026-08-05 05:21:00] [INFO] Scanning path: C:\Users\labuser\AppData\Local\Temp\2
+[2026-08-05 05:21:00] [INFO] Scanning path: C:\Windows\Temp
+[2026-08-05 05:21:00] [INFO] Discovered 8 candidate file(s).
+[2026-08-05 05:21:00] [WARN] Skipped locked file: C:\Users\labuser\AppData\Local\Temp\2\0b0ae8dd-8d3d-4338-80bc-af3a4382eb0b.tmp
+[2026-08-05 05:21:00] [WARN] Skipped locked file: C:\Users\labuser\AppData\Local\Temp\2\256a6398-f05c-4c5a-bf6b-3efd4ce55928.tmp
+[2026-08-05 05:21:00] [INFO] Moved to quarantine: C:\Users\labuser\AppData\Local\Temp\2\cv_debug.log -> C:\Users\labuser\Documents\Training\day3\cleanup-quarantine\20260805-052100\000003_cv_debug.log
+[2026-08-05 05:21:00] [WARN] Skipped locked file: C:\Users\labuser\AppData\Local\Temp\2\ddf386f6-db7a-4b38-aa84-e16e8ce7b90e.tmp
+[2026-08-05 05:21:00] [WARN] Skipped locked file: C:\Users\labuser\AppData\Local\Temp\2\e3fdcfd8-f24f-41ff-b563-c9c6b9ba29bd.tmp
+[2026-08-05 05:21:00] [INFO] Moved to quarantine: C:\Users\labuser\AppData\Local\Temp\2\exthost-0bc825.cpuprofile -> C:\Users\labuser\Documents\Training\day3\cleanup-quarantine\20260805-052100\000006_exthost-0bc825.cpuprofile
+[2026-08-05 05:21:00] [INFO] Moved to quarantine: C:\Users\labuser\AppData\Local\Temp\2\gen_py\3.9\dicts.dat -> C:\Users\labuser\Documents\Training\day3\cleanup-quarantine\20260805-052100\000007_dicts.dat
+[2026-08-05 05:21:00] [INFO] Moved to quarantine: C:\Users\labuser\AppData\Local\Temp\2\gen_py\3.9\__init__.py -> C:\Users\labuser\Documents\Training\day3\cleanup-quarantine\20260805-052100\000008___init__.py
+[2026-08-05 05:21:00] [INFO] Rollback manifest created: C:\Users\labuser\Documents\Training\day3\cleanup-quarantine\manifests\cleanup-manifest-20260805-052100.csv

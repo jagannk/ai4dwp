@@ -1,0 +1,7 @@
+[2026-08-05 06:19:20] [INFO] Cleanup mode started. OlderThanDays=3; Cutoff=8/2/2026 6:19:20 AM
+[2026-08-05 06:19:20] [INFO] Processing log: Application
+[2026-08-05 06:19:20] [INFO] DryRun result for 'Application': TotalRecords=279; OldRecords=8; WouldDelete=0; CanClearWholeLog=False
+[2026-08-05 06:19:20] [INFO] Processing log: System
+[2026-08-05 06:19:20] [INFO] DryRun result for 'System': TotalRecords=1592; OldRecords=66; WouldDelete=0; CanClearWholeLog=False
+[2026-08-05 06:19:20] [INFO] Processing log: Security
+[2026-08-05 06:19:20] [ERROR] Failed reading log metadata for 'Security'. Could not retrieve information about the Security log. Error: Attempted to perform an unauthorized operation..

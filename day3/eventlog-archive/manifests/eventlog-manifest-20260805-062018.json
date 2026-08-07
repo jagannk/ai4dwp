@@ -1,0 +1,22 @@
+﻿[
+    {
+        "LogName":  "Application",
+        "ArchivePath":  "C:\\Users\\labuser\\Documents\\Training\\day3\\eventlog-archive\\Application\\Application-20260805.evtx",
+        "ArchiveDate":  "20260805",
+        "Cutoff":  "2026-08-02T06:20:18.6318731+00:00",
+        "TotalRecordsAtRun":  279,
+        "OldRecordsAtRun":  8,
+        "Cleared":  false,
+        "Timestamp":  "2026-08-05T06:20:18.6162481+00:00"
+    },
+    {
+        "LogName":  "System",
+        "ArchivePath":  "C:\\Users\\labuser\\Documents\\Training\\day3\\eventlog-archive\\System\\System-20260805.evtx",
+        "ArchiveDate":  "20260805",
+        "Cutoff":  "2026-08-02T06:20:18.6318731+00:00",
+        "TotalRecordsAtRun":  1592,
+        "OldRecordsAtRun":  66,
+        "Cleared":  false,
+        "Timestamp":  "2026-08-05T06:20:18.6162481+00:00"
+    }
+]
