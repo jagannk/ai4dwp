@@ -1,0 +1,59 @@
+G*161294435496od
+
+
+az group create --name dwp-lab-rg --location centralus
+
+
+training [ ~ ]$ az group create --name dwp-lab-rg --location centralus
+{
+  "id": "/subscriptions/1c7550b6-10d6-4884-a991-f7a6fd15840a/resourceGroups/dwp-lab-rg",
+  "location": "centralus",
+  "managedBy": null,
+  "name": "dwp-lab-rg",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null,
+  "type": "Microsoft.Resources/resourceGroups"
+}
+
+
+az vm create --resource-group dwp-lab-rg --name dwp-p16-win --image MicrosoftWindowsDesktop:windows-11:win11-24h2-ent:latest --size Standard_B2ms --admin-username dwpadmin --admin-password ‘DWPLab2024@Az’ --location centralus --public-ip-sku Standard --os-disk-size-gb 128 --storage-sku StandardSSD_LRS --nsg-rule RDP --security-type TrustedLaunch --enable-secure-boot true --enable-vtpm true
+
+{
+  "fqdns": "",
+  "id": "/subscriptions/1c7550b6-10d6-4884-a991-f7a6fd15840a/resourceGroups/dwp-lab-rg/providers/Microsoft.Compute/virtualMachines/dwp-p16-win",
+  "location": "centralus",
+  "macAddress": "00-0D-3A-A7-73-09",
+  "powerState": "VM running",
+  "privateIpAddress": "10.0.0.4",
+  "publicIpAddress": "172.173.123.148",
+  "resourceGroup": "dwp-lab-rg"
+}
+
+
+az vm identity assign --resource-group dwp-lab-rg --name dwp-p16-win
+
+
+{
+  "systemAssignedIdentity": "6bb447af-373a-4185-9ee1-703b231b6357",
+  "userAssignedIdentities": {}
+}
+
+az vm extension set --resource-group dwp-lab-rg --vm-name dwp-p16-win --name AADLoginForWindows --publisher Microsoft.Azure.ActiveDirectory --version 2.0
+
+
+{
+  "autoUpgradeMinorVersion": true,
+  "id": "/subscriptions/1c7550b6-10d6-4884-a991-f7a6fd15840a/resourceGroups/dwp-lab-rg/providers/Microsoft.Compute/virtualMachines/dwp-p16-win/extensions/AADLoginForWindows",
+  "location": "centralus",
+  "name": "AADLoginForWindows",
+  "provisioningState": "Succeeded",
+  "publisher": "Microsoft.Azure.ActiveDirectory",
+  "resourceGroup": "dwp-lab-rg",
+  "type": "Microsoft.Compute/virtualMachines/extensions",
+  "typeHandlerVersion": "2.0",
+  "typePropertiesType": "AADLoginForWindows"
+}
+
+
