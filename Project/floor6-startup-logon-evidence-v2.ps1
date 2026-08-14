@@ -1,0 +1,313 @@
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [string]$AppPattern = 'FinBridge',
+
+    [Parameter(Mandatory = $false)]
+    [ValidateRange(1, 168)]
+    [int]$LookbackHours = 72,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [string]$OutputRoot = '.\evidence',
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DryRun
+)
+
+# v2.1 (2026-08-14): strict-mode safe uninstall key parsing for sparse registry entries.
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Convert-WmiDateSafe {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return $null
+    }
+
+    try {
+        return [Management.ManagementDateTimeConverter]::ToDateTime($Value)
+    }
+    catch {
+        return $null
+    }
+}
+
+function New-OutputDirectory {
+    param([string]$Root)
+
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $folder = "floor6-startup-logon-$env:COMPUTERNAME-$stamp"
+    $fullPath = Join-Path -Path $Root -ChildPath $folder
+    New-Item -Path $fullPath -ItemType Directory -Force | Out-Null
+    return (Resolve-Path -Path $fullPath).Path
+}
+
+function Get-RunKeyEntries {
+    param([string]$Pattern)
+
+    $runKeys = @(
+        'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run',
+        'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run',
+        'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+    )
+
+    foreach ($key in $runKeys) {
+        if (-not (Test-Path -Path $key)) {
+            continue
+        }
+
+        $item = Get-ItemProperty -Path $key
+        foreach ($property in $item.PSObject.Properties) {
+            if ($property.Name -in @('PSPath', 'PSParentPath', 'PSChildName', 'PSDrive', 'PSProvider')) {
+                continue
+            }
+
+            $valueString = [string]$property.Value
+            if ($property.Name -like "*$Pattern*" -or $valueString -like "*$Pattern*") {
+                [pscustomobject]@{
+                    Source = 'RunKey'
+                    RegistryPath = $key
+                    Name = $property.Name
+                    Command = $valueString
+                }
+            }
+        }
+    }
+}
+
+function Get-StartupFolderEntries {
+    param([string]$Pattern)
+
+    $paths = @(
+        "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp",
+        "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+    )
+
+    foreach ($path in $paths) {
+        if (-not (Test-Path -Path $path)) {
+            continue
+        }
+
+        Get-ChildItem -Path $path -File -ErrorAction SilentlyContinue | ForEach-Object {
+            if ($_.Name -like "*$Pattern*" -or $_.FullName -like "*$Pattern*") {
+                [pscustomobject]@{
+                    Source = 'StartupFolder'
+                    Path = $_.FullName
+                    Name = $_.Name
+                    LastWriteTime = $_.LastWriteTime
+                }
+            }
+        }
+    }
+}
+
+$startTime = (Get-Date).AddHours(-$LookbackHours)
+$hostOs = Get-CimInstance -ClassName Win32_OperatingSystem
+$hostCs = Get-CimInstance -ClassName Win32_ComputerSystem
+$bootTime = $hostOs.LastBootUpTime
+
+$hostInfo = [pscustomobject]@{
+    ComputerName = $env:COMPUTERNAME
+    CollectedAt = Get-Date
+    UserContext = [Environment]::UserName
+    Domain = $hostCs.Domain
+    Model = $hostCs.Model
+    OS = $hostOs.Caption
+    OSVersion = $hostOs.Version
+    LastBootUpTime = $bootTime
+    LookbackStart = $startTime
+    AppPattern = $AppPattern
+}
+
+$startupCommands = Get-CimInstance -ClassName Win32_StartupCommand | ForEach-Object {
+    $name = [string]$_.Name
+    $command = [string]$_.Command
+    if ($name -like "*$AppPattern*" -or $command -like "*$AppPattern*") {
+        [pscustomobject]@{
+            Source = 'Win32_StartupCommand'
+            Name = $name
+            Command = $command
+            User = [string]$_.User
+            Location = [string]$_.Location
+        }
+    }
+}
+
+$runKeyEntries = @(Get-RunKeyEntries -Pattern $AppPattern)
+$startupFolderEntries = @(Get-StartupFolderEntries -Pattern $AppPattern)
+
+$scheduledTasks = Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object {
+    $_.TaskName -like "*$AppPattern*" -or $_.TaskPath -like "*$AppPattern*"
+} | Select-Object TaskName, TaskPath, State, Author, Description
+
+$services = Get-CimInstance -ClassName Win32_Service -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -like "*$AppPattern*" -or $_.DisplayName -like "*$AppPattern*" -or $_.PathName -like "*$AppPattern*"
+} | Select-Object Name, DisplayName, State, StartMode, PathName
+
+$processes = Get-Process -ErrorAction SilentlyContinue | Where-Object {
+    $_.ProcessName -like "*$AppPattern*"
+} | Select-Object ProcessName, Id, CPU, WorkingSet64, StartTime
+
+$installSources = @(
+    'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+    'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+    'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*'
+)
+$installedApps = foreach ($src in $installSources) {
+    Get-ItemProperty -Path $src -ErrorAction SilentlyContinue | Where-Object {
+        $hasDisplayName = $_.PSObject.Properties.Match('DisplayName').Count -gt 0
+        $displayName = if ($hasDisplayName) { [string]$_.DisplayName } else { '' }
+        $displayName -and $displayName -like "*$AppPattern*"
+    } | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, InstallLocation, UninstallString
+}
+
+$diagPerfEvents = Get-WinEvent -FilterHashtable @{
+    LogName = 'Microsoft-Windows-Diagnostics-Performance/Operational'
+    StartTime = $startTime
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.Id -in 100, 101, 102, 103, 200, 201, 202
+} | Select-Object TimeCreated, Id, LevelDisplayName, ProviderName, Message
+
+$winlogonEvents = Get-WinEvent -FilterHashtable @{
+    LogName = 'Microsoft-Windows-Winlogon/Operational'
+    StartTime = $startTime
+} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Id, LevelDisplayName, Message
+
+$systemEvents = Get-WinEvent -FilterHashtable @{
+    LogName = 'System'
+    StartTime = $startTime
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.ProviderName -in @('GroupPolicy', 'Microsoft-Windows-GroupPolicy', 'Service Control Manager')
+} | Select-Object TimeCreated, Id, LevelDisplayName, ProviderName, Message
+
+$allStartupHits = @($startupCommands).Count + @($runKeyEntries).Count + @($startupFolderEntries).Count
+
+$summary = [pscustomobject]@{
+    Hypothesis = 'New app startup component causing logon stall'
+    AppPattern = $AppPattern
+    Device = $env:COMPUTERNAME
+    CollectedAt = Get-Date
+    LookbackHours = $LookbackHours
+    LastBootUpTime = $bootTime
+    Counts = [pscustomobject]@{
+        StartupHits = $allStartupHits
+        StartupCommandHits = @($startupCommands).Count
+        RunKeyHits = @($runKeyEntries).Count
+        StartupFolderHits = @($startupFolderEntries).Count
+        ScheduledTaskHits = @($scheduledTasks).Count
+        ServiceHits = @($services).Count
+        RunningProcessHits = @($processes).Count
+        InstalledAppHits = @($installedApps).Count
+        DiagnosticsPerfEvents = @($diagPerfEvents).Count
+        WinlogonEvents = @($winlogonEvents).Count
+        GPAndServiceEvents = @($systemEvents).Count
+    }
+    DecisionGuide = [pscustomobject]@{
+        ConfirmSignal = 'Matched startup/scheduled-task artifacts plus correlated diagnostics/Winlogon delays in same time window.'
+        RuleOutSignal = 'No startup artifacts and no correlated delay events tied to app footprint.'
+        NextAction = 'Run A/B test: disable app startup item on one pilot user, repeat collection, compare logon duration and event counts.'
+    }
+}
+
+if ($DryRun) {
+    [pscustomobject]@{
+        Mode = 'DryRun'
+        Purpose = 'Preview collection actions without writing files.'
+        WouldQuery = @(
+            'Win32_StartupCommand',
+            'Run registry keys (HKLM/HKCU/WOW6432Node)',
+            'Startup folders (All Users and Current User)',
+            'Scheduled tasks',
+            'Services',
+            'Processes',
+            'Installed application registry',
+            'Diagnostics-Performance event log',
+            'Winlogon operational event log',
+            'System log (Group Policy and SCM providers)'
+        )
+        WouldWriteFiles = @(
+            'summary.json',
+            'host-info.json',
+            'startup-artifacts.json',
+            'scheduled-tasks.json',
+            'services.json',
+            'processes.json',
+            'installed-apps.json',
+            'events-diagnostics-performance.csv',
+            'events-winlogon.csv',
+            'events-system-gp-scm.csv',
+            'timeline.csv'
+        )
+        PreviewSummary = $summary
+    } | ConvertTo-Json -Depth 8
+    return
+}
+
+$outputDir = New-OutputDirectory -Root $OutputRoot
+
+$startupArtifacts = @($startupCommands) + @($runKeyEntries) + @($startupFolderEntries)
+
+$timeline = @(
+    $diagPerfEvents | ForEach-Object {
+        [pscustomobject]@{
+            TimeCreated = $_.TimeCreated
+            Source = 'Diagnostics-Performance'
+            Id = $_.Id
+            Level = $_.LevelDisplayName
+            Message = $_.Message
+        }
+    }
+    $winlogonEvents | ForEach-Object {
+        [pscustomobject]@{
+            TimeCreated = $_.TimeCreated
+            Source = 'Winlogon'
+            Id = $_.Id
+            Level = $_.LevelDisplayName
+            Message = $_.Message
+        }
+    }
+    $systemEvents | ForEach-Object {
+        [pscustomobject]@{
+            TimeCreated = $_.TimeCreated
+            Source = 'System'
+            Id = $_.Id
+            Level = $_.LevelDisplayName
+            Message = $_.Message
+        }
+    }
+) | Sort-Object -Property TimeCreated
+
+$summary | ConvertTo-Json -Depth 8 | Set-Content -Path (Join-Path $outputDir 'summary.json') -Encoding utf8
+$hostInfo | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $outputDir 'host-info.json') -Encoding utf8
+$startupArtifacts | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $outputDir 'startup-artifacts.json') -Encoding utf8
+$scheduledTasks | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $outputDir 'scheduled-tasks.json') -Encoding utf8
+$services | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $outputDir 'services.json') -Encoding utf8
+$processes | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $outputDir 'processes.json') -Encoding utf8
+$installedApps | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $outputDir 'installed-apps.json') -Encoding utf8
+$diagPerfEvents | Export-Csv -Path (Join-Path $outputDir 'events-diagnostics-performance.csv') -NoTypeInformation -Encoding utf8
+$winlogonEvents | Export-Csv -Path (Join-Path $outputDir 'events-winlogon.csv') -NoTypeInformation -Encoding utf8
+$systemEvents | Export-Csv -Path (Join-Path $outputDir 'events-system-gp-scm.csv') -NoTypeInformation -Encoding utf8
+$timeline | Export-Csv -Path (Join-Path $outputDir 'timeline.csv') -NoTypeInformation -Encoding utf8
+
+[pscustomobject]@{
+    Status = 'Complete'
+    OutputDirectory = $outputDir
+    Hypothesis = $summary.Hypothesis
+    Files = @(
+        'summary.json',
+        'host-info.json',
+        'startup-artifacts.json',
+        'scheduled-tasks.json',
+        'services.json',
+        'processes.json',
+        'installed-apps.json',
+        'events-diagnostics-performance.csv',
+        'events-winlogon.csv',
+        'events-system-gp-scm.csv',
+        'timeline.csv'
+    )
+    NextAction = 'Run this script on one unaffected floor device and compare summary counts plus timeline density.'
+} | ConvertTo-Json -Depth 6
